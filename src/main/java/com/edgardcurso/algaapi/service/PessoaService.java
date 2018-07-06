@@ -29,7 +29,7 @@ public class PessoaService {
         pessoaRepository.save(pessoaSalva.get());
     }
 
-    private Optional<Pessoa> getPessoa(Long codigo) {
+    public Optional<Pessoa> getPessoa(Long codigo) {
         Optional<Pessoa> pessoaSalva = pessoaRepository.findById(codigo);
 
         if(!pessoaSalva.isPresent()){
