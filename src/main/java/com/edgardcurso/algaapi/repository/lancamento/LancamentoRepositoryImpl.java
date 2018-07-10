@@ -2,8 +2,10 @@ package com.edgardcurso.algaapi.repository.lancamento;
 
 import com.edgardcurso.algaapi.model.Lancamento;
 import com.edgardcurso.algaapi.model.Lancamento_;
-import com.edgardcurso.algaapi.repository.LancamentoRepository;
 import com.edgardcurso.algaapi.repository.filter.LancamentoFilter;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.util.StringUtils;
 
 import javax.persistence.EntityManager;
@@ -22,7 +24,7 @@ public class LancamentoRepositoryImpl implements LancamentoRepositoryQuery{
     private EntityManager entityManager;
 
     @Override
-    public List<Lancamento> filtrar(LancamentoFilter lancamentoFilter) {
+    public Page<Lancamento> filtrar(LancamentoFilter lancamentoFilter, Pageable pageable) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Lancamento> criteria = builder.createQuery(Lancamento.class);
         Root<Lancamento> root = criteria.from(Lancamento.class);
@@ -32,7 +34,9 @@ public class LancamentoRepositoryImpl implements LancamentoRepositoryQuery{
         criteria.where(predicates);
 
         TypedQuery<Lancamento> query = entityManager.createQuery(criteria);
-        return query.getResultList();
+        adicionarRestricoesDePaginacao(query,pageable);
+
+        return new PageImpl<>(query.getResultList(), pageable, total(lancamentoFilter));
     }
 
     private Predicate[] criarRestricoes(LancamentoFilter lancamentoFilter, CriteriaBuilder builder, Root<Lancamento> root) {
@@ -58,5 +62,33 @@ public class LancamentoRepositoryImpl implements LancamentoRepositoryQuery{
         }
 
         return predicates.toArray(new Predicate[predicates.size()]);
+    }
+
+    private Long total(LancamentoFilter lancamentoFilter) {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Long> criteria = builder.createQuery(Long.class);
+
+        /**
+         * esquema como é montado a query com o criteria do Jpa
+         */
+        //from lancamento
+        Root<Lancamento> root = criteria.from(Lancamento.class);
+
+        //where
+        Predicate[] preciates = criarRestricoes(lancamentoFilter, builder, root);
+        criteria.where(preciates);
+
+        //select count * from
+        criteria.select(builder.count(root));
+        return entityManager.createQuery(criteria).getSingleResult();
+    }
+
+    private void adicionarRestricoesDePaginacao(TypedQuery<Lancamento> query, Pageable pageable) {
+        int paginaAtual = pageable.getPageNumber();
+        int totalRegistrosPorPagina = pageable.getPageSize();
+        int primeiroRegistroDaPagina = paginaAtual * totalRegistrosPorPagina;
+
+        query.setFirstResult(primeiroRegistroDaPagina);
+        query.setMaxResults(totalRegistrosPorPagina);
     }
 }
