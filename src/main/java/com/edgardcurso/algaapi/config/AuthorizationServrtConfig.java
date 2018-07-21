@@ -7,14 +7,12 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
 @Configuration
-@EnableAuthorizationServer
 public class AuthorizationServrtConfig extends AuthorizationServerConfigurerAdapter {
 
     @Autowired
@@ -27,8 +25,15 @@ public class AuthorizationServrtConfig extends AuthorizationServerConfigurerAdap
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
         clients.inMemory()
                 .withClient("angular")
-                .secret("{noop}@ngul@r0")
+                .secret("$2a$10$oE0kxERwFPlyqS8bIEy1aeR2yd3j9D2uFl1YuBnWyOK5WcKvm58wu") //@ngul@r0
                 .scopes("read", "write")
+                .authorizedGrantTypes("password", "refresh_token")
+                .accessTokenValiditySeconds(1800)
+                .refreshTokenValiditySeconds(3600 * 24)
+        .and()
+                .withClient("mobile")
+                .secret("$2a$10$oE0kxERwFPlyqS8bIEy1aeR2yd3j9D2uFl1YuBnWyOK5WcKvm58wu") //@ngul@r0
+                .scopes("read")
                 .authorizedGrantTypes("password", "refresh_token")
                 .accessTokenValiditySeconds(1800)
                 .refreshTokenValiditySeconds(3600 * 24);
@@ -36,6 +41,7 @@ public class AuthorizationServrtConfig extends AuthorizationServerConfigurerAdap
 
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+
         endpoints
                 .tokenStore(tokenStore())
                 .accessTokenConverter(accessTokenConverter())
@@ -56,4 +62,6 @@ public class AuthorizationServrtConfig extends AuthorizationServerConfigurerAdap
     public TokenStore tokenStore(){
         return new JwtTokenStore(accessTokenConverter());
     }
+
+
 }
