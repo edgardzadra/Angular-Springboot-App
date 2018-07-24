@@ -5,6 +5,7 @@ import com.edgardcurso.algaapi.exceptionhandler.ProjectExceptionHandler;
 import com.edgardcurso.algaapi.model.Lancamento;
 import com.edgardcurso.algaapi.repository.LancamentoRepository;
 import com.edgardcurso.algaapi.repository.filter.LancamentoFilter;
+import com.edgardcurso.algaapi.repository.projection.ResumoLancamento;
 import com.edgardcurso.algaapi.service.LancamentoService;
 import com.edgardcurso.algaapi.service.exception.PessoaInexistenteOuInativaException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +46,12 @@ public class LancamentoResource {
     @PreAuthorize("hasAuthority('ROLE_PESQUISAR_LANCAMENTO') and #oauth2.hasScope('read')")
     public Page<Lancamento> pesquisar(LancamentoFilter lancamentoFilter, Pageable pageable){
         return lancamentoRepository.filtrar(lancamentoFilter, pageable);
+    }
+
+    @GetMapping(params = "resumo")
+    @PreAuthorize("hasAuthority('ROLE_PESQUISAR_LANCAMENTO') and #oauth2.hasScope('read')")
+    public Page<ResumoLancamento> resumir(LancamentoFilter lancamentoFilter, Pageable pageable){
+        return lancamentoRepository.resumir(lancamentoFilter, pageable);
     }
 
     @GetMapping("/{codigo}")

@@ -1,5 +1,7 @@
 package com.edgardcurso.algaapi.cors;
 
+import com.edgardcurso.algaapi.config.property.ApiProperty;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -13,8 +15,8 @@ import java.io.IOException;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class CorsFilter implements Filter {
 
-    private String originPermitida = ""; //TODO: Configurar para diferentes ambientes
-
+    @Autowired
+    private ApiProperty apiProperty;
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -26,11 +28,11 @@ public class CorsFilter implements Filter {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse resp = (HttpServletResponse) response;
 
-        resp.setHeader("Access-Control-Allow-Origin", originPermitida);
+        resp.setHeader("Access-Control-Allow-Origin", apiProperty.getOriginPermitida());
         resp.setHeader("Access-Control-Allow-Credentials", "true");
 
 
-        if("OPTIONS".equals(req.getMethod()) && originPermitida.equals(req.getHeader("Origin"))){
+        if("OPTIONS".equals(req.getMethod()) && apiProperty.getOriginPermitida().equals(req.getHeader("Origin"))){
             resp.setHeader("Access-Control-Allow-Methods", "POST,GET,DELETE,PUT,OPTIONS");
             resp.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, Accept");
             resp.setHeader("Access-Control-Max-Age", "3600");

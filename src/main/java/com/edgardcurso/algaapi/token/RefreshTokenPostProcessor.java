@@ -1,5 +1,7 @@
 package com.edgardcurso.algaapi.token;
 
+import com.edgardcurso.algaapi.config.property.ApiProperty;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -19,6 +21,8 @@ import javax.servlet.http.HttpServletResponse;
 @ControllerAdvice
 public class RefreshTokenPostProcessor implements ResponseBodyAdvice<OAuth2AccessToken> {
 
+    @Autowired
+    private ApiProperty apiProperty;
 
     @Override
     public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
@@ -48,7 +52,7 @@ public class RefreshTokenPostProcessor implements ResponseBodyAdvice<OAuth2Acces
     private void adicionarRefreshTokenNoCookie(String refreshToken, HttpServletRequest req, HttpServletResponse res) {
         Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
         refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setSecure(false); //TODO: mudar para true em producao
+        refreshTokenCookie.setSecure(apiProperty.getSeguranca().isEnableHttps());
         refreshTokenCookie.setPath(req.getContextPath() + "/oauth/token");
         refreshTokenCookie.setMaxAge(2592000);
 
